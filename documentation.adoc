@@ -1,0 +1,103 @@
+= Justeat data
+Robert A. Greener <Robert.Greener@lshtm.ac.uk>
+v1.0.0, 11 May, 2021
+:toc: 
+:sectnums:
+
+[abstract]
+
+This data was scraped from Just Eat on the 11th of May 2021.
+The software used to scrape this data is available from https://doi.org/10.5281/zenodo.4748552 upon request.
+
+[[customers]]
+== `customers` table
+
+This table stores potential customers, i.e. the postcodes which were scraped
+
+=== Fields
+
+*  [#postcode]#`postcode`# -- Type: `TEXT PRIMARY KEY`--This is a postcode area which was scraped.
+
+=== Example data
+
+* `postcode` -- NW1
+
+[[restaurants]]
+== `restaurants` table
+
+This table stores restaurants from Just Eat
+
+=== Fields
+
+* [#id]#`id`# -- Type: `INT PRIMARY KEY` -- This is the ID of the restaurant.
+* `name` -- Type: `TEXT NOT NULL` -- The name of the restaurant.
+* `address__first_line` -- Type: `TEXT` -- The first line of the restaurant's address.
+* `address__city` -- Type: `TEXT` -- The city of the restaurant.
+* `address__postcode` -- Type: `TEXT` -- The postcode of the restaurant.
+* `latitude` -- Type: `REAL` -- The latitude of the restaurant.
+* `longitude` -- Type: `REAL` -- The longitude of the restaurant.
+* `rating__count` -- Type: `INT` -- The number of ratings the restaurant has received.
+* `rating__average` -- Type: `REAL` -- The average rating of the restaurant.
+* `description` -- Type: `TEXT` -- The description of the restaurant.
+* `url` -- Type: `TEXT` -- The URL of the restaurant's menu.
+
+=== Example data
+
+* `id` -- 136122
+* `name` -- Bridge Deli
+* `address__first_line` -- 1 South Parade Weston Point
+* `address__city` -- Runcorn
+* `address__postcode` -- WA7 4HZ
+* `latitude` -- 53.324097
+* `longitude` -- -2.756145
+* `rating__count` -- 6
+* `rating_average` -- 6
+* `description` -- NULL
+* `url` -- https://www.just-eat.co.uk/restaurants-bridge-deli-runcorn
+
+== `customers_to_restaurants` table
+
+This table stores the many-to-many relationship between the <<customers,`customers`>> table and the <<restaurants,`restaurants`>> table. The semantics of an entry here are that a given customer can purchase from a given restaurant. Not all customers will have entries in this table. This means that Just Eat was not able at their postcode.
+
+=== Fields
+
+* `customer_id` -- Type: `TEXT FOREIGN KEY REFERENCES customers (postcode) NOT NULL` -- This references the <<postcode,`postcode`>> field of the <<customers,`customers`>> table. i.e., the `customers` table should be merged with this one on this field.
+* `restaurant_id` -- Type: `INT FOREIGN KEY REFERENCES restaurants (id) NOT NULL` -- This references the <<id,`id`>> field of the <<restaurants,`restaurants`>> table. i.e., the `restaurants` table should be merged with this one on this field.
+
+In this table `customer_id` and `restaurant_id` form a multi-column primary key -- i.e., they uniquely identify an entry.
+
+=== Example data
+
+* `customer_id` -- WA6
+* `restaurant_id` -- 136122
+
+[[tags]]
+== `tags` table
+
+This table stores tags which a restaurant may have.
+
+=== Fields
+
+* [#tagid]#`id`# -- Type: `INT PRIMARY KEY` -- This is the ID of the tag.
+* `name` -- Type: `TEXT NOT NULL` -- This is the name of the tag.
+
+=== Example data
+
+* `id` -- 92
+* `name` -- Breakfast
+
+== `tags_restaurants` table
+
+This table stores the many-to-many relationship between the <<tags,`tags`>> table and the <<restaurants,`restaurants`>> table. The semantics of an entry here are that a given tag is associated with a given restaurant. Not all restaurants will have entries here, as some were untagged.
+
+=== Fields
+
+* `restaurant_id` -- Type: `INT FOREIGN KEY REFERENCES restaurants (id) NOT NULL` -- This references the <<id,`id`>> field of the <<restaurants,`restaurants`>> table. i.e., the `restaurants` table should be merged with this one on this field.
+* `tag_id` -- Type: `INT FOREIGN KEY REFERENCES tags (id) NOT NULL` -- This references the <<tagid,`id`>> field of the <<tags,`tags`>> table. i.e., the `tags` table should be merged with this one on this field.
+* `is_top_cuisine` -- Type: `boolean` -- This is true if it is a 'top' cuisine for the restaurant, false otherwise.
+
+=== Example data
+
+* `restaurant_id` -- 136122
+* `tag_id` -- 92
+* `is_top_cuisine` -- t
